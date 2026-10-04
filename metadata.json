@@ -1,6 +1,0 @@
-{
-  "name": "CarCare",
-  "description": "CarCare Egypt is a full-stack car maintenance booking platform in Egypt with branches across Cairo and Giza, real EGP pricing, vehicle garage management, and online appointments.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
