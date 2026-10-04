@@ -3,34 +3,38 @@
  * CarCare - Database Configuration
  */
 
-// قراءة من Environment Variables
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_NAME', getenv('DB_NAME') ?: 'railway');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+// استخدم SQLite بدل MySQL على Railway
+$sqlitePath = __DIR__ . '/../database/carcare.sqlite';
+
+if (file_exists($sqlitePath)) {
+    // استخدم SQLite
+    try {
+        $pdo = new PDO('sqlite:' . $sqlitePath);
+        $pdo->exec('PRAGMA foreign_keys = ON;');
+    } catch (PDOException $e) {
+        die('SQLite Error: ' . $e->getMessage());
+    }
+} else {
+    // أو MySQL كـ backup
+    $host = getenv('DB_HOST') ?: 'localhost';
+    $name = getenv('DB_NAME') ?: 'carcare';
+    $user = getenv('DB_USER') ?: 'root';
+    $pass = getenv('DB_PASS') ?: '';
+    
+    try {
+        $dsn = "mysql:host=$host;dbname=$name;charset=utf8mb4";
+        $pdo = new PDO($dsn, $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+    } catch (PDOException $e) {
+        die('Database Error: ' . $e->getMessage());
+    }
+}
 
 function getDBConnection(): PDO {
-    static $pdo = null;
-
-    if ($pdo === null) {
-        $dsn = sprintf(
-            'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
-            DB_HOST,
-            DB_PORT,
-            DB_NAME
-        );
-
-        try {
-            $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]);
-        } catch (PDOException $e) {
-            die('Database Connection Error: ' . $e->getMessage());
-        }
-    }
-
+    global $pdo;
     return $pdo;
 }
+?>
